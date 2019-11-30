@@ -1,3 +1,13 @@
 ./PruebasYRecursos
 ./PruebasYRecursos/*
-
+./support
+./chromedriver
+./geckodrive*
+./Datos
+./Driver_Notes
+./Classification
+./operadriver*
+./sha512*
+./MicrosoftWebDrive*
+./IEDriverSer*
+./debug
