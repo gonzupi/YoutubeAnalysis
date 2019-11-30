@@ -1,7 +1,9 @@
-## Introduction
-The project is going to analyze the main page of YouTube getting data from some users to analyze that data getting some conclusions about the "recommendations" of YouTube.
-We are trying to get information about the reasons that matters to YouTube to put the video there. Payments, number of views, channels.... And also we'r going to check the cookies and we want to know if Google Chrome sends data to Youtube, added to the rest of information that Alphabet has of the users.
+## Note
+You need to install Selenium pip package to run the program in Python. I used Eclipse and the webdrivers APIs to use Chrome and Firefox so u need to put them in the PATH directory.
 
+Selenium - Eclipse tutorial - (https://www.guru99.com/selenium-python.html)[https://www.guru99.com/selenium-python.html]
+Chrome webdriver - (https://chromedriver.chromium.org/downloads)[https://chromedriver.chromium.org/downloads]
+Firefox webdriver - (https://github.com/mozilla/geckodriver/releases/)[https://github.com/mozilla/geckodriver/releases/]
 
 
 
