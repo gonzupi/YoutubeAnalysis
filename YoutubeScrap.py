@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
 Created on 19 nov. 2019
-
 @author: Gonzalo Bueno Santana
 Programa pensado para extraer datos de la plataforma YouTube usando diferentes navegadores : Google Chrome, Mozilla Firefox, Microsoft Edge y Opera
 El programa extrae información con sesión iniciada y sin la sesión iniciada para después compararla
@@ -27,7 +26,6 @@ from scipy import integrate
 ################################################################################################################
 host_name = socket.gethostname()
 host_ip = socket.gethostbyname(host_name)
-print("IP del dispositivo : ",host_ip)
 start_time = time.time()
 
 WithProxy=0 # WithProxy = 1;
@@ -51,7 +49,7 @@ sleepTime = 3
 def youtubeBrowser(BrowserSelector, WithSesion):
     ##Iniciamos GOOGLE CHROME o MOZILLA FIREFOX, la cabecera del dataFrame y
     #la función de espera para cada parámetro, además de decidir si iniciamos o no sesión
-    if BrowserSelector === "Chrome" :
+    if BrowserSelector == "Chrome" :
         prefix = "GC_"
         print(prefix,'Iniciando Chrome')
         caps = DesiredCapabilities().CHROME
@@ -70,7 +68,7 @@ def youtubeBrowser(BrowserSelector, WithSesion):
             driver = webdriver.Firefox(desired_capabilities=caps,  proxy=proxy)
         if WithProxy == 0 :
                 driver = webdriver.Firefox(desired_capabilities=caps)
-        v_navegador_ = 'Mozilla Firefox'
+        v_navegador = 'Mozilla Firefox'
 
     wait = WebDriverWait(driver,tiempoEspera)
     wait_name = WebDriverWait(driver,tiempoEspera_Nombre)
@@ -80,7 +78,7 @@ def youtubeBrowser(BrowserSelector, WithSesion):
     driver.maximize_window()
     MiIp=host_ip
 
-    if WithSesion === True :
+    if WithSesion == True :
         #Iniciamos sesión y nos vamos a YouTube
         driver.get('https://accounts.google.com/signin/v2/identifier')
         print(prefix,'Vamos a iniciar sesion')
@@ -93,7 +91,7 @@ def youtubeBrowser(BrowserSelector, WithSesion):
 
     #Obtengo los links de cada vídeo que he conseguido del mainPage.
     user_data = getMainVideos(driver, wait)
-    links = getLinks(user_data)
+    links = getLinks(user_data, prefix)
     for i in user_data:
         try:
             links.append(i.get_attribute('href'))
@@ -119,25 +117,24 @@ def youtubeBrowser(BrowserSelector, WithSesion):
         v_id = x.strip('https://www.youtube.com/watch?v=')
         #Datos del vídeo
         v_title =getTitle(wait_name,wait)
-        v_numComments = getNumComments(wait)
-        v_category = getCategory(wait)
-        v_description=getDescription(wait)
-        v_numVisualizacioness = getNumVis(wait)
-        v_fecha = getDate(wait, wait_Ads)
-        v_likes = getLikes(wait)
-        v_dislikes=getDislikes(wait)
+        v_numComments = getNumComments(wait, prefix)
+        v_category = getCategory(wait, prefix)
+        v_description=getDescription(wait, prefix)
+        v_numVisualizacioness = getNumVis(wait, prefix)
+        v_fecha = getDate(wait, wait_Ads, prefix)
+        v_likes = getLikes(wait, prefix)
+        v_dislikes=getDislikes(wait, prefix)
         #Datos del canal
-        v_channel=getChannelName(wait, wait_Ads)
-        v_channelLink=getChannelLink(wait)
-        v_channelSubs=getChannelSub(wait)
+        v_channel=getChannelName(wait, wait_Ads, prefix)
+        v_channelLink=getChannelLink(wait, prefix)
+        v_channelSubs=getChannelSub(wait, prefix)
         #Anuncio
-        v_adLink=getAdLink(wait, wait_Ads)
+        v_adLink=getAdLink(wait, wait_Ads, prefix)
 
         df.loc[len(df)] = [v_id, v_title, v_category, v_description,v_numComments, v_fecha,v_numVisualizacioness, v_likes, v_dislikes,v_channel , v_channelLink, v_channelSubs, v_navegador, v_sesionInit, v_adLink]
 
         numVideo = numVideo +1
         print (prefix,'Extraido vídeo ' , numVideo ,' de ', len(links), ' llamado : ', v_title)
-        print (prefix,(numVideo*100/len(links)), '%')
 
     #Cierro el navegador
     driver.close()
@@ -154,9 +151,9 @@ def youtubeBrowser(BrowserSelector, WithSesion):
     print(prefix,'Finalizado : Copia de datos al excel')
 
     #Calculate elapsed time
-    printElapsedTime(start_time)
+    printElapsedTieme(start_time, prefix)
 
-def printElapsedTieme(started_time):
+def printElapsedTieme(started_time, prefix):
     temp = time.time() - started_time
     hours = temp//3600
     temp = temp - 3600*hours
@@ -181,7 +178,7 @@ def getMainVideos(driver, wait):
     return driver.find_elements_by_xpath('//*[@id="video-title"]')
     #Obtengo los links de la página principal.
 
-def getLinks(user_data):
+def getLinks(user_data, prefix):
     links = []
     for i in user_data:
         try:
@@ -217,7 +214,7 @@ def getTitle(wait_name,wait):
                 v_title = 'ERROR'
         return v_title
 
-def getNumComments(wait):
+def getNumComments(wait, prefix):
     try:
         v_numComments = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,"yt-formatted-string.count-text.style-scope.ytd-comments-header-renderer"))).text
     except:
@@ -236,7 +233,7 @@ def getNumComments(wait):
                 v_numComments = 'ERROR'
     return v_numComments
 
-def getNumComments(wait):
+def getCategory(wait, prefix):
     try:
         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,"paper-button#more"))).click()
     except:
@@ -260,7 +257,7 @@ def getNumComments(wait):
                 v_category = 'ERROR'
     return v_category
 
-def getChannelName(wait, wait_Ads):
+def getChannelName(wait, wait_Ads, prefix):
     try:
         v_channel =  wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,"div#text-container.style-scope.ytd-channel-name yt-formatted-string a.yt-formatted-string"))).text
     except :
@@ -278,7 +275,7 @@ def getChannelName(wait, wait_Ads):
     ##RESETEO A POSICION DE ARRIBA
     return v_channel
 
-def getChannelLink(wait):
+def getChannelLink(wait, prefix):
     try:
         v_channelLink = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,"div#text-container.style-scope.ytd-channel-name yt-formatted-string#text a"))).get_attribute('href')
     except :
@@ -286,7 +283,7 @@ def getChannelLink(wait):
         v_channelLink='ERROR'
     return v_channelLink
 
-def getChannelSub(wait):
+def getChannelSub(wait, prefix):
     try:
         v_channelSubs=wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,"yt-formatted-string#owner-sub-count"))).text
     except :
@@ -298,8 +295,9 @@ def getChannelSub(wait):
         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR," body"))).send_keys(Keys.PAGE_UP)
     except:
         print(prefix,"ERROR : subir página")
+    return v_channelSubs
 
-def getAdLink(wait, wait_Ads):
+def getAdLink(wait, wait_Ads, prefix):
     try:
         wait.until(EC.presence_of_element_located((By.CSS_SELECTOR," body"))).send_keys(Keys.PAGE_UP)
     except:
@@ -313,7 +311,7 @@ def getAdLink(wait, wait_Ads):
         print(prefix,'Anuncio : ',v_addLink)
     return v_addLink
 
-def getLikes(wait):
+def getLikes(wait, prefix):
     try:
         v_likes =  wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,"yt-formatted-string#text[aria-label^='Me gusta']"))).text
     except :
@@ -325,7 +323,7 @@ def getLikes(wait):
             v_likes='ERROR'
     return v_likes
 
-def getDislikes(wait):
+def getDislikes(wait, prefix):
     try:
         v_dislikes =  wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,"yt-formatted-string#text[aria-label$='No me gusta']"))).text
     except :
@@ -337,7 +335,7 @@ def getDislikes(wait):
             v_dislikes='ERROR'
     return v_dislikes
 
-def getDate(wait, wait_Ads):
+def getDate(wait, wait_Ads, prefix):
     try:
         v_fecha =  wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,"div#count yt-view-count-renderer"))).text
     except :
@@ -355,7 +353,7 @@ def getDate(wait, wait_Ads):
         print(prefix,"ERROR : subir página")
     return v_fecha
 
-def getNumVis(wait):
+def getNumVis(wait, prefix):
     #Número de visualizaciones
     try:
         v_numVisualizacioness = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,"div#date yt-formatted-string.style-scope.ytd-video-primary-info-renderer"))).text
@@ -374,7 +372,7 @@ def getNumVis(wait):
         print(prefix,"ERROR : subir página")
     return v_numVisualizacioness
 
-def getDescription(wait):
+def getDescription(wait, prefix):
     try:
         v_description = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR,"div#description yt-formatted-string"))).text
     except:
@@ -385,21 +383,23 @@ def getDescription(wait):
 
 #mainCode
 ################################################################################################################
-print('Iniciando...')
-ChromeThread = threading.Thread(target=youtubeBrowser("Chrome", WithSesion=True))
-ChromeThread.start()
 
-FirefoxThread = threading.Thread(target=youtubeBrowser("Firefox", WithSesion=True))
+print('Iniciando...')
+print("IP del dispositivo : ",host_ip)
+
+ChromeThread = threading.Thread(target=youtubeBrowser, args=("Chrome", True,))
+FirefoxThread = threading.Thread(target=youtubeBrowser, args=("Firefox", True,))
 FirefoxThread.start()
+ChromeThread.start()
 
 
 FirefoxThread.join()
 ChromeThread.join()
 
-ChromeThread_SS = threading.Thread(target=youtubeBrowser("Chrome", WithSesion=False))
+ChromeThread_SS = threading.Thread(target=youtubeBrowser, args=("Chrome", False,))
 ChromeThread_SS.start()
 
-FirefoxThread_SS = threading.Thread(target=youtubeBrowser("Firefox", WithSesion=False))
+FirefoxThread_SS = threading.Thread(target=youtubeBrowser, args=("Firefox", False,))
 FirefoxThread_SS.start()
 
 ChromeThread_SS.join()
